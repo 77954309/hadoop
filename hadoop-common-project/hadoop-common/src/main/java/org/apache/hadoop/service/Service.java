@@ -29,6 +29,7 @@ import java.util.Map;
 
 /**
  * Service LifeCycle.
+ * 标准的组件/模块 组织方式
  */
 @Public
 @Evolving

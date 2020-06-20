@@ -73,6 +73,10 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 
+/**
+ * ApplicationMaster客户端
+ * @param <T>
+ */
 @Private
 @Unstable
 public class AMRMClientImpl<T extends ContainerRequest> extends AMRMClient<T> {
@@ -275,6 +279,7 @@ public class AMRMClientImpl<T extends ContainerRequest> extends AMRMClient<T> {
       }
 
       try {
+        //
         allocateResponse = rmClient.allocate(allocateRequest);
       } catch (ApplicationMasterNotRegisteredException e) {
         LOG.warn("ApplicationMaster is out of sync with ResourceManager,"

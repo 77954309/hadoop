@@ -263,6 +263,7 @@ public class TestFail {
           return NetUtils.createSocketAddr("localhost", 1234);
         }
 
+        @Override
         protected void serviceInit(Configuration conf) throws Exception {
           conf.setInt(MRJobConfig.TASK_TIMEOUT, 1*1000);//reduce timeout
           conf.setInt(MRJobConfig.TASK_TIMEOUT_CHECK_INTERVAL_MS, 1*1000);

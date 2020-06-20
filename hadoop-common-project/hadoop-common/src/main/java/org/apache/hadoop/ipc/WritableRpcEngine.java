@@ -277,7 +277,8 @@ public class WritableRpcEngine implements RpcEngine {
   }
   
   /** Construct a client-side proxy object that implements the named protocol,
-   * talking to a server at the named address. 
+   * talking to a server at the named address.
+   * 构造getProxy构造RpcClient
    * @param <T>*/
   @Override
   public <T> ProtocolProxy<T> getProxy(Class<T> protocol, long clientVersion,
@@ -290,7 +291,8 @@ public class WritableRpcEngine implements RpcEngine {
   }
 
   /** Construct a client-side proxy object that implements the named protocol,
-   * talking to a server at the named address. 
+   * talking to a server at the named address.
+   *
    * @param <T>*/
   @Override
   @SuppressWarnings("unchecked")
@@ -313,7 +315,9 @@ public class WritableRpcEngine implements RpcEngine {
   }
   
   /* Construct a server for a protocol implementation instance listening on a
-   * port and address. */
+   * port and address.
+   * 构造RpcServer
+   * */
   @Override
   public RPC.Server getServer(Class<?> protocolClass,
                       Object protocolImpl, String bindAddress, int port,
@@ -415,10 +419,17 @@ public class WritableRpcEngine implements RpcEngine {
          * target protocolImpl is suppled for all protocol interfaces, and
          * the protocolImpl is derived from the protocolClass(es) 
          * we register all interfaces extended by the protocolImpl
+         * 协议版本信息
+         * 判断Class对象所表示的类或接口与指定Class参数列表式
+         *
          */
         protocols = RPC.getProtocolInterfaces(protocolImpl.getClass());
 
       } else {
+        /**
+         * 判定此 Class 对象所表示的类或接口与指定的 Class
+         * 参数所表示的类或接口是否相同，或是否是其超类或超接口。
+         */
         if (!protocolClass.isAssignableFrom(protocolImpl.getClass())) {
           throw new IOException("protocolClass "+ protocolClass +
               " is not implemented by protocolImpl which is of class " +

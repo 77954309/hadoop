@@ -250,6 +250,7 @@ public class ContainerLauncherImpl extends AbstractService implements
     cmProxy = new ContainerManagementProtocolProxy(conf);
   }
 
+  @Override
   protected void serviceStart() throws Exception {
 
     ThreadFactory tf = new ThreadFactoryBuilder().setNameFormat(

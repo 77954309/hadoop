@@ -35,6 +35,15 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.yarn.exceptions.YarnRuntimeException;
 import org.apache.hadoop.yarn.factories.RpcClientFactory;
 
+/**
+ * 根据通信协议接口（java interface）及Protocol Buffers定义构造
+ * RPC客户端句柄，但它对通信协议的存放位置和类命名有一定要求，
+ * 假设通信协议接口Xxx所在Java包名为Xxxpackage,
+ * 则客户端实现代码必须位于Java包XxxPackage.impl.pb.client中
+ * （在接口包名后面增加".impl.pb.client"）,且实现类名为PBClientImplXxx
+ * (在接口名前面增加前缀PBClientImpl)
+ *
+ */
 @Private
 public class RpcClientFactoryPBImpl implements RpcClientFactory {
 

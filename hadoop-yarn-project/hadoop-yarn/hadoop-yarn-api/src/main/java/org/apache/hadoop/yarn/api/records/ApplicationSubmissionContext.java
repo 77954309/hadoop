@@ -62,6 +62,7 @@ import org.apache.hadoop.yarn.util.Records;
  * 
  * @see ContainerLaunchContext
  * @see ApplicationClientProtocol#submitApplication(org.apache.hadoop.yarn.api.protocolrecords.SubmitApplicationRequest)
+ *
  */
 @Public
 @Stable
@@ -80,10 +81,16 @@ public abstract class ApplicationSubmissionContext {
         Records.newRecord(ApplicationSubmissionContext.class);
     context.setApplicationId(applicationId);
     context.setApplicationName(applicationName);
+    //队列
     context.setQueue(queue);
+    //优先级
     context.setPriority(priority);
+    //启动ApplicationMaster相关信息
     context.setAMContainerSpec(amContainer);
+    //是否由客户端自己启动ApplicationMaster
     context.setUnmanagedAM(isUnmanagedAM);
+    //当应用程序运行完成时，是否取消Token，通常将该值设为true,除非特殊的应用需求，
+    //需求将应用程序token共享给其他应用程序。
     context.setCancelTokensWhenComplete(cancelTokensWhenComplete);
     context.setMaxAppAttempts(maxAppAttempts);
     context.setApplicationType(applicationType);

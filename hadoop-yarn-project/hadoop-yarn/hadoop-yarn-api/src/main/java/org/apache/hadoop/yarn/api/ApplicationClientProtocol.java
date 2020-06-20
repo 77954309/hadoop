@@ -90,7 +90,9 @@ import org.apache.hadoop.yarn.exceptions.YarnException;
 /**
  * <p>The protocol between clients and the <code>ResourceManager</code>
  * to submit/abort jobs and to get information on applications, cluster metrics,
- * nodes, queues and ACLs.</p> 
+ * nodes, queues and ACLs.</p>
+ * Client与ResourceManager之间
+ * Client通过该协议可实现将应用程序提交到ResourceManager上、查询应用程序的运行状态或者杀死应用程序等功能。
  */
 @Public
 @Stable
@@ -113,6 +115,8 @@ public interface ApplicationClientProtocol {
    * @throws YarnException
    * @throws IOException
    * @see #submitApplication(SubmitApplicationRequest)
+   * Application ID和最大申请资源量
+   *
    */
   @Public
   @Stable
@@ -187,7 +191,8 @@ public interface ApplicationClientProtocol {
    *         on success and throws an exception on rejecting the request
    * @throws YarnException
    * @throws IOException
-   * @see #getQueueUserAcls(GetQueueUserAclsInfoRequest) 
+   * @see #getQueueUserAcls(GetQueueUserAclsInfoRequest)
+   * 杀死Application
    */
   @Public
   @Stable
@@ -226,6 +231,7 @@ public interface ApplicationClientProtocol {
    * @return application report 
    * @throws YarnException
    * @throws IOException
+   * 获取Application运行报告，包括用户、队列、运行环境状态等等
    */
   @Public
   @Stable
@@ -247,6 +253,8 @@ public interface ApplicationClientProtocol {
    * @return cluster metrics
    * @throws YarnException
    * @throws IOException
+   * 获取集群的metric信息
+   *
    */
   @Public
   @Stable
@@ -295,6 +303,7 @@ public interface ApplicationClientProtocol {
    * @return report on all nodes
    * @throws YarnException
    * @throws IOException
+   * 查询当前系统中所有节点信息
    */
   @Public
   @Stable
@@ -518,7 +527,7 @@ public interface ApplicationClientProtocol {
   @Unstable
   @Idempotent
   public GetContainerReportResponse getContainerReport(
-      GetContainerReportRequest request) throws YarnException, IOException;
+      GetContainerReportRequest request) throws YarnExceptio·n, IOException;
 
   /**
    * <p>

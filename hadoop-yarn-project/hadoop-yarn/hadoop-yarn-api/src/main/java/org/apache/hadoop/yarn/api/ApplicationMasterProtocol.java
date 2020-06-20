@@ -45,6 +45,8 @@ import org.apache.hadoop.yarn.exceptions.YarnException;
  * <p>This is used by the <code>ApplicationMaster</code> to register/unregister
  * and to request and obtain resources in the cluster from the
  * <code>ResourceManager</code>.</p>
+ * ApplicationMaster与ResourceManager之间
+ * 使用该协议向ResourceManager注册、申请资源、获取各个任务情况运行情况
  */
 @Public
 @Stable
@@ -163,6 +165,12 @@ public interface ApplicationMasterProtocol {
    *           resources.
    * @see AllocateRequest
    * @see AllocateResponse
+   * 获取资源
+   * 即时ApplicationMaster不需要任何资源，它仍需周期性调用ApplicationMasterProtocol 维持
+   * ResourceManager之间心跳，否则一定时间内resourceManager未收到任何来自ApplicationMaster的消息，
+   * 则系统任务它已经死掉
+   * 周期性询问是否存在分配应用程序的资源。
+   *
    */
   @Public
   @Stable

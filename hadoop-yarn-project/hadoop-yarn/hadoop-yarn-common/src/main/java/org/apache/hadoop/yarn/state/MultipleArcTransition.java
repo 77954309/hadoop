@@ -25,6 +25,8 @@ import org.apache.hadoop.classification.InterfaceStability.Evolving;
  * Hook for Transition. 
  * Post state is decided by Transition hook. Post state must be one of the 
  * valid post states registered in StateMachine.
+ * 作用是当有限状态机（FSM）中状态转换为
+ * 已经注册到状态机的多个有效状态中一个伴随的行为与操作。
  */
 @Public
 @Evolving

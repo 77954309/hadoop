@@ -129,6 +129,7 @@ extends AMRMClientAsync<T> {
   /**
    * Registers this application master with the resource manager. On successful
    * registration, starts the heartbeating thread.
+   * 注册ApplicationMaster
    * @throws YarnException
    * @throws IOException
    */

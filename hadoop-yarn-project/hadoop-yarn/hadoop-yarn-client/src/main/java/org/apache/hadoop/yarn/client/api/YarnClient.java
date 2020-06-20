@@ -69,6 +69,7 @@ public abstract class YarnClient extends AbstractService {
 
   /**
    * Create a new instance of YarnClient.
+   * 客户端句柄初始化
    */
   @Public
   public static YarnClient createYarnClient() {
@@ -97,6 +98,7 @@ public abstract class YarnClient extends AbstractService {
       throws YarnException, IOException;
 
   /**
+   * 提交任务
    * <p>
    * Submit a new application to <code>YARN.</code> It is a blocking call - it
    * will not return {@link ApplicationId} until the submitted application is

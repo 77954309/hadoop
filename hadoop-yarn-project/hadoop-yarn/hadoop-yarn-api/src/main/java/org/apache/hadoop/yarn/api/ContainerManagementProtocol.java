@@ -46,6 +46,9 @@ import org.apache.hadoop.yarn.exceptions.YarnException;
  * by the <code>ResourceManager</code> and also verifies all interactions such 
  * as stopping the container or obtaining status information for the container.
  * </p>
+ * 用于ApplicationMaster与NodeManager之间
+ * 使用该协议要求NodeManager启动/撤销Container或查询Container的运行状态
+ *
  */
 @Public
 @Stable

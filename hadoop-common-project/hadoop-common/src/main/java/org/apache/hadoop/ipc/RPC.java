@@ -108,6 +108,7 @@ public class RPC {
   
   /**
    * Get all superInterfaces that extend VersionedProtocol
+   *
    * @param childInterfaces
    * @return the super interfaces that extend VersionedProtocol
    */
@@ -328,6 +329,7 @@ public class RPC {
   }
 
   /**
+   * 构造一个客户端代理对象（改对象实现某个协议），用于向服务器发送RPC请求
    * Get a protocol proxy that contains a proxy connection to a remote server
    * and a set of methods that are supported by the server
    * 
@@ -418,7 +420,8 @@ public class RPC {
   }
 
   /** Construct a client-side proxy object that implements the named protocol,
-   * talking to a server at the named address. 
+   * talking to a server at the named address.
+   * 先从客户端开始
    * @param <T>*/
   public static <T> T getProxy(Class<T> protocol,
                                 long clientVersion,
@@ -678,6 +681,8 @@ public class RPC {
 
   /**
    * Class to construct instances of RPC server with specific options.
+   * 静态类，构造RPC Server
+   *
    */
   public static class Builder {
     private Class<?> protocol = null;
@@ -848,6 +853,13 @@ public class RPC {
    }
    
    // Register  protocol and its impl for rpc calls
+
+    /**
+     *
+     * @param rpcKind
+     * @param protocolClass
+     * @param protocolImpl
+     */
    void registerProtocolAndImpl(RpcKind rpcKind, Class<?> protocolClass, 
        Object protocolImpl) {
      String protocolName = RPC.getProtocolName(protocolClass);

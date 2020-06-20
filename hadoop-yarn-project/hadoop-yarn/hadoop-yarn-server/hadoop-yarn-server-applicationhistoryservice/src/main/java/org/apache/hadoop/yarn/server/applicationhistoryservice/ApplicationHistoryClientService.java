@@ -75,6 +75,7 @@ public class ApplicationHistoryClientService extends AbstractService {
     this.protocolHandler = new ApplicationHSClientProtocolHandler();
   }
 
+  @Override
   protected void serviceStart() throws Exception {
     Configuration conf = getConfig();
     YarnRPC rpc = YarnRPC.create(conf);

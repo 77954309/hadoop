@@ -45,7 +45,7 @@ import org.apache.hadoop.yarn.exceptions.YarnRuntimeException;
 public class AsyncDispatcher extends AbstractService implements Dispatcher {
 
   private static final Log LOG = LogFactory.getLog(AsyncDispatcher.class);
-
+  //先进先出队列，阻塞队列
   private final BlockingQueue<Event> eventQueue;
   private volatile boolean stopped = false;
 
@@ -77,6 +77,10 @@ public class AsyncDispatcher extends AbstractService implements Dispatcher {
     this.eventDispatchers = new HashMap<Class<? extends Enum>, EventHandler>();
   }
 
+  /**
+   * 获取事件
+   * @return
+   */
   Runnable createThread() {
     return new Runnable() {
       @Override
@@ -157,6 +161,10 @@ public class AsyncDispatcher extends AbstractService implements Dispatcher {
     super.serviceStop();
   }
 
+  /**
+   * 适配启动设计handler处理器
+   * @param event
+   */
   @SuppressWarnings("unchecked")
   protected void dispatch(Event event) {
     //all events go thru this loop

@@ -64,8 +64,11 @@ public abstract class ContainerLaunchContext {
       Map<ApplicationAccessType, String> acls) {
     ContainerLaunchContext container =
         Records.newRecord(ContainerLaunchContext.class);
+    //ApplicationMaster运行所需本地资源，通常是一些外部文件
     container.setLocalResources(localResources);
+    //ApplicationMaster所需运行环境变量
     container.setEnvironment(environment);
+    //ApplicationMaster启动命令（一般为Shell命令）
     container.setCommands(commands);
     container.setServiceData(serviceData);
     container.setTokens(tokens);

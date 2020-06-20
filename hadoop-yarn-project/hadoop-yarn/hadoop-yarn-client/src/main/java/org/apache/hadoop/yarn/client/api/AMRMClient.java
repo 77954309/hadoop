@@ -42,6 +42,10 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 
+/**
+ * application master client class to resource manager.
+ * @param <T>
+ */
 @InterfaceAudience.Public
 @InterfaceStability.Stable
 public abstract class AMRMClient<T extends AMRMClient.ContainerRequest> extends

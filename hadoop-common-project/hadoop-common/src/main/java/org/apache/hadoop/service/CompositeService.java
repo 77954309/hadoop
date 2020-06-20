@@ -98,6 +98,7 @@ public class CompositeService extends AbstractService {
     }
   }
 
+  @Override
   protected void serviceInit(Configuration conf) throws Exception {
     List<Service> services = getServices();
     if (LOG.isDebugEnabled()) {
@@ -109,6 +110,7 @@ public class CompositeService extends AbstractService {
     super.serviceInit(conf);
   }
 
+  @Override
   protected void serviceStart() throws Exception {
     List<Service> services = getServices();
     if (LOG.isDebugEnabled()) {

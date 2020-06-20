@@ -98,13 +98,23 @@ import com.google.protobuf.CodedOutputStream;
 /** A client for an IPC service.  IPC calls take a single {@link Writable} as a
  * parameter, and return a {@link Writable} as their value.  A service runs on
  * a port and is defined by a parameter class and a value class.
- * 
+ * 发送远程调用信息并接受执行结果
+ * 两个Call Connection
+ * Call 封装了一个rpc它包含5个成员变量
+ * Connection类：Client与每个Server之间维护一个通信连接
+ *
+ * callIdCounter :callld发好器
+ * connections:HashTable结构，用来维护id->Connection的映射
+ * sendParamsExecutor:请求发送线程池
+ * 总体来说Client端实现比较简单，用hashTable的结构来维护connectionId -> connections以及callId -> calls 对应关系，使得请求响应不需要有严格的顺序性
  * @see Server
  */
 public class Client {
   
   public static final Log LOG = LogFactory.getLog(Client.class);
-
+  /**
+   * calld发号器
+   */
   /** A counter for generating call IDs. */
   private static final AtomicInteger callIdCounter = new AtomicInteger();
 
@@ -121,6 +131,9 @@ public class Client {
     retryCount.set(rc);
   }
 
+  /**
+   * 维护id->Connection映射
+   */
   private Hashtable<ConnectionId, Connection> connections =
     new Hashtable<ConnectionId, Connection>();
 
@@ -143,8 +156,10 @@ public class Client {
    * Deferring the sending of parameters to a separate
    * thread isolates them from thread interruptions in the
    * calling code.
+   * 请求发送线程池
    */
   private final ExecutorService sendParamsExecutor;
+  //
   private final static ClientExecutorServiceFactory clientExcecutorFactory =
       new ClientExecutorServiceFactory();
 
@@ -300,6 +315,7 @@ public class Client {
 
   /** 
    * Class that represents an RPC call
+   * rpc请求
    */
   static class Call {
     final int id;               // call id
@@ -364,7 +380,10 @@ public class Client {
 
   /** Thread that reads responses and notifies callers.  Each connection owns a
    * socket connected to a remote address.  Calls are multiplexed through this
-   * socket: responses may be delivered out of order. */
+   * socket: responses may be delivered out of order.
+   * Client 与每个Server之间维护一个通信连接
+   *
+   * */
   private class Connection extends Thread {
     private InetSocketAddress server;             // server ip:port
     private final ConnectionId remoteId;                // connection id
@@ -449,6 +468,7 @@ public class Client {
      * Add a call to this connection's call queue and notify
      * a listener; synchronized.
      * Returns false if called during shutdown.
+     * 一个call对象添加hashtable
      * @param call to add
      * @return true if the call was added.
      */
@@ -983,6 +1003,7 @@ public class Client {
     /** Initiates a rpc call by sending the rpc request to the remote server.
      * Note: this is not called from the Connection thread, but by other
      * threads.
+     * 用户线程中通过call入口调用，用户线程阻塞
      * @param call - the rpc request
      */
     public void sendRpcRequest(final Call call)
@@ -1002,7 +1023,10 @@ public class Client {
       // 1) RpcRequestHeader  - is serialized Delimited hence contains length
       // 2) RpcRequest
       //
-      // Items '1' and '2' are prepared here. 
+      // Items '1' and '2' are prepared here.
+      /**
+       *
+       */
       final DataOutputBuffer d = new DataOutputBuffer();
       RpcRequestHeaderProto header = ProtoUtil.makeRpcRequestHeader(
           call.rpcKind, OperationProto.RPC_FINAL_PACKET, call.id, call.retry,
@@ -1060,6 +1084,7 @@ public class Client {
 
     /* Receive a response.
      * Because only one receiver, so no synchronization on in.
+     * run中不断轮询server看结果是否就绪
      */
     private void receiveRpcResponse() {
       if (shouldCloseConnection.get()) {
@@ -1258,6 +1283,11 @@ public class Client {
 
   /**
    * Same as {@link #call(RPC.RpcKind, Writable, ConnectionId)}
+   * 1.首先创建一个Call对象，封装RPC请求，成员变量有唯一标识id、请求数据、返回数据、是否完成等
+   * 2、创建Connection对象（它是个线程），并与服务器连接，即Client与Server之间的一个通信连接，保存未完成的Call对象至哈希表，唯一标识ID,Server通信的Socket，网络输入输出流。
+   * 3.调用connection.sendRpcRequest(call);将Call对象发送给Server
+   * 4.等待Server端处理Call请求，服务端处理完成，通过网络返回服务端处理完成后，通过网络返回给Client端。这部分代码不在call方法里，还记得1中Connection是个线程吗？去run方法看看 线程一直循环，直到Server返回结果，然后调用receiveRpcResponse方法返回数据。
+   * 5.再次回到call方法，它也有个循环，一直在等待结果返回。结果返回后，检查下成功失败后，就将Call从哈希表中移除了。
    *  for RPC_BUILTIN
    */
   public Writable call(Writable param, InetSocketAddress address)

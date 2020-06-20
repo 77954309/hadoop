@@ -35,6 +35,7 @@ import com.google.common.annotations.VisibleForTesting;
 
 /**
  * This is the base implementation class for services.
+ * 服务对象
  */
 @Public
 @Evolving

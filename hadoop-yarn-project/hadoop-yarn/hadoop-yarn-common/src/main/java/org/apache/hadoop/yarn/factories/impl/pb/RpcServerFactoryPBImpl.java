@@ -40,6 +40,9 @@ import org.apache.hadoop.yarn.factories.RpcServerFactory;
 
 import com.google.protobuf.BlockingService;
 
+/**
+ * 根据通信协议的接口（实际）
+ */
 @Private
 public class RpcServerFactoryPBImpl implements RpcServerFactory {
 

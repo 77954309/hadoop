@@ -24,6 +24,8 @@ import org.apache.hadoop.classification.InterfaceStability.Evolving;
 /**
  * Hook for Transition. This lead to state machine to move to 
  * the post state as registered in the state machine.
+ * 具体实现类只负责接收到事件后的具体操作或行为，
+ * 并没有包含状态相关的信息，所以在状态机执行状态过度
  */
 @Public
 @Evolving

@@ -39,7 +39,7 @@ import org.apache.hadoop.classification.InterfaceStability.Evolving;
  * @param <STATE> The state of the entity.
  * @param <EVENTTYPE> The external eventType to be handled.
  * @param <EVENT> The event object.
- *
+ * 状态机工厂
  */
 @Public
 @Evolving
@@ -51,15 +51,20 @@ final public class StateMachineFactory
 
   private Map<STATE, Map<EVENTTYPE,
     Transition<OPERAND, STATE, EVENTTYPE, EVENT>>> stateMachineTable;
-
+  /**
+   * 对象创建时，内部有限状态机的默认初始状态。
+   */
   private STATE defaultInitialState;
-
+  /**
+   * 用于标记当前状态机是否需要优化性能，即构建状态拓扑表stateMachineTable
+   */
   private final boolean optimized;
 
   /**
    * Constructor
    *
    * This is the only constructor in the API.
+   * 公共构造器只有一个
    *
    */
   public StateMachineFactory(STATE defaultInitialState) {
@@ -79,6 +84,14 @@ final public class StateMachineFactory
     this.stateMachineTable = null;
   }
 
+  /**
+   * 状态拓扑表，为了提高检索状态对应的过渡map冗余
+   * 结构在optimized为真时，通过对transitionsListNode链表进行处理产生。
+   *
+   * installTopology中使用
+   * @param that
+   * @param optimized
+   */
   private StateMachineFactory
       (StateMachineFactory<OPERAND, STATE, EVENTTYPE, EVENT> that,
        boolean optimized) {
@@ -92,12 +105,25 @@ final public class StateMachineFactory
     }
   }
 
+  /**
+   *YARN中提供了ApplicableTransition接口用于将SingleInternalArc和MultipleInternalArc添加到状态机的拓扑表中，
+   * 提高在检索状态对应的过渡实现时的性能，ApplicableTransition的实现类为ApplicableSingleOrMultipleTransition类，
+   * 其apply方法用于代理SingleInternalArc和MultipleInternalArc，将它们添加到状态拓扑表中
+   *
+   * @param <OPERAND>
+   * @param <STATE>
+   * @param <EVENTTYPE>
+   * @param <EVENT>
+   */
   private interface ApplicableTransition
              <OPERAND, STATE extends Enum<STATE>,
               EVENTTYPE extends Enum<EVENTTYPE>, EVENT> {
     void apply(StateMachineFactory<OPERAND, STATE, EVENTTYPE, EVENT> subject);
   }
 
+  /**
+   * 就是将状态机的一个个过渡的ApplicableTransition实现串联为一个列表，每个节点包含一个ApplicableTransition实现及指向下一个节点的引用
+   */
   private class TransitionsListNode {
     final ApplicableTransition<OPERAND, STATE, EVENTTYPE, EVENT> transition;
     final TransitionsListNode next;
@@ -126,6 +152,10 @@ final public class StateMachineFactory
       this.transition = transition;
     }
 
+    /**
+     * 其apply方法用于代理SingleInternalArc和MultipleInternalArc，将它们添加到状态拓扑表中
+     * @param subject
+     */
     @Override
     public void apply
              (StateMachineFactory<OPERAND, STATE, EVENTTYPE, EVENT> subject) {
@@ -223,6 +253,8 @@ final public class StateMachineFactory
    * @param postState post-transition state
    * @param eventType stimulus for the transition
    * @param hook transition hook
+   * 用户添加各种状态转移
+   *
    */
   public StateMachineFactory
              <OPERAND, STATE, EVENTTYPE, EVENT>
@@ -311,6 +343,13 @@ final public class StateMachineFactory
     }
   }
 
+  /**
+   * transitionsListNode链表进行处理产生
+   * 创建堆栈stack，用于将transitionsListNode链表中各个节点持有的ApplicableSingleOrMultipleTransition压入栈中；
+   * 创建状态拓扑表stateMachineTable，并在此拓扑表中插入一个额外的默认初始状态defaultInitialState与null的映射；
+   * 迭代访问transitionsListNode链表，并将各个节点持有的ApplicableSingleOrMultipleTransition压入栈中；
+   * 依次弹出栈顶的ApplicableSingleOrMultipleTransition，并应用其apply方法，持续不断的构建状态拓扑表stateMachineTable。
+   */
   private void makeStateMachineTable() {
     Stack<ApplicableTransition<OPERAND, STATE, EVENTTYPE, EVENT>> stack =
       new Stack<ApplicableTransition<OPERAND, STATE, EVENTTYPE, EVENT>>();
@@ -343,6 +382,9 @@ final public class StateMachineFactory
                        EVENT event, EVENTTYPE eventType);
   }
 
+  /**
+   * 作为Transition接口的实现类，在代理SingleArcTransition的同时，负责状态变换
+   */
   private class SingleInternalArc
                     implements Transition<OPERAND, STATE, EVENTTYPE, EVENT> {
 
@@ -365,6 +407,9 @@ final public class StateMachineFactory
     }
   }
 
+  /**
+   * MultipleInternalArc也实现了Transition接口，并在代理MultipleArcTransition的转换行为的同时，负责状态变换。
+   */
   private class MultipleInternalArc
               implements Transition<OPERAND, STATE, EVENTTYPE, EVENT>{
 

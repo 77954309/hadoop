@@ -111,6 +111,7 @@ public class MRClientService extends AbstractService implements ClientService {
     this.protocolHandler = new MRClientProtocolHandler();
   }
 
+  @Override
   protected void serviceStart() throws Exception {
     Configuration conf = getConfig();
     YarnRPC rpc = YarnRPC.create(conf);

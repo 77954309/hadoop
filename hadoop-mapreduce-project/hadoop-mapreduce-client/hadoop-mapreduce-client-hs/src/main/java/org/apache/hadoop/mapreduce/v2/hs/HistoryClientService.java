@@ -115,6 +115,7 @@ public class HistoryClientService extends AbstractService {
     this.jhsDTSecretManager = jhsDTSecretManager;
   }
 
+  @Override
   protected void serviceStart() throws Exception {
     Configuration conf = getConfig();
     YarnRPC rpc = YarnRPC.create(conf);

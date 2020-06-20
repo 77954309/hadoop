@@ -23,6 +23,12 @@ import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.yarn.api.protocolrecords.GetNewApplicationResponse;
 import org.apache.hadoop.yarn.api.records.ApplicationSubmissionContext;
 
+
+/**
+ * InterfaceAudience 类型使用范围
+ * InterfaceStability 用来说明被注解的类的稳定性，兼容性
+ *
+ */
 @InterfaceAudience.Public
 @InterfaceStability.Stable
 

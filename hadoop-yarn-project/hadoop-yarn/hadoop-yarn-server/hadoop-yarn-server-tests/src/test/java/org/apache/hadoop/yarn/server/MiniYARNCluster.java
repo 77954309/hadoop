@@ -550,6 +550,7 @@ public class MiniYARNCluster extends CompositeService {
       return dirsString;
     }
 
+    @Override
     protected synchronized void serviceStart() throws Exception {
       try {
         new Thread() {

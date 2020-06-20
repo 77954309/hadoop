@@ -129,7 +129,10 @@ import com.google.protobuf.Message.Builder;
 /** An abstract IPC service.  IPC calls take a single {@link Writable} as a
  * parameter, and return a {@link Writable} as their value.  A service runs on
  * a port and is defined by a parameter class and a value class.
- * 
+ * Hadoop 采用Master/Slave结果，其中Master是整个系统单点，
+ * 如果NameNode或JobTracker
+ * 接收请求，处理请求，返回结果
+ *
  * @see Client
  */
 public abstract class Server {
@@ -165,6 +168,9 @@ public abstract class Server {
         newSet.add(name.toString());
       }
       // Replace terseException set
+      /**
+       * 不可修改的视图
+       */
       terseExceptions = Collections.unmodifiableSet(newSet);
     }
 
@@ -373,6 +379,7 @@ public abstract class Server {
   private final boolean tcpNoDelay; // if T then disable Nagle's Algorithm
 
   volatile private boolean running = true;         // true while server runs
+  //共享队列
   private CallQueueManager<Call> callQueue;
 
   // maintains the set of client connections and handles idle timeouts
@@ -551,7 +558,11 @@ public abstract class Server {
     }    
   }
 
-  /** Listens on the socket. Creates jobs for the handler threads*/
+  /** Listens on the socket. Creates jobs for the handler threads
+   * 只有一个Listener线程，统一服装监听一个来自客户端连接请求，一旦有新的求到达，它会采用轮询的方式从线程池中选贼一个Reader线程进行处理
+   * 而Reader线程可同时存在多个，他们分别负责接收一部分客户端连接的RPC请求
+   *
+   * */
   private class Listener extends Thread {
     
     private ServerSocketChannel acceptChannel = null; //the accept channel
@@ -809,6 +820,12 @@ public abstract class Server {
   }
 
   // Sends responses of RPC back to clients.
+
+  /**
+   * 函数调用返回结果过大或者网络异常情况（网络过慢），
+   * 仅存一个selector对象，用于监听SelectionKey。OP_WRITE
+   *
+   */
   private class Responder extends Thread {
     private final Selector writeSelector;
     private int pending;         // connections waiting to register

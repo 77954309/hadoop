@@ -124,6 +124,7 @@ public class LocalContainerLauncher extends AbstractService implements
     // after running (e.g., "localizeForTask()" or "localizeForMapTask()").
   }
 
+  @Override
   public void serviceStart() throws Exception {
     // create a single thread for serial execution of tasks
     // make it a daemon thread so that the process can exit even if the task is

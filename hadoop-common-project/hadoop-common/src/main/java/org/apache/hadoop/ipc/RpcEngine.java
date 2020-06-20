@@ -32,6 +32,14 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.SecretManager;
 import org.apache.hadoop.security.token.TokenIdentifier;
 
+/**
+ * 序列化模块
+ * 用来获取client端proxy和server端的server
+ * 主要的实现WritableRpcEngine,ProtoubufRpcEngine(默认)
+ * 两者的区别主要是序列化与反序列化的协议不同；内部都有继承Server构成完整Rpc Server的实现类
+ * IPC.Server是两种序列化协议的基类，org.apache.hadoop.ipc.Server 主要实现了Reactor的请求处理模式
+ */
+
 /** An RPC implementation. */
 @InterfaceStability.Evolving
 public interface RpcEngine {

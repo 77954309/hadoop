@@ -136,7 +136,7 @@ public class TestRPCUtil {
   private void verifyRemoteExceptionUnwrapping(
       Class<? extends Throwable> expectedLocalException,
       String realExceptionClassName) {
-  String message = realExceptionClassName + "Message";
+    String message = realExceptionClassName + "Message";
     RemoteException re = new RemoteException(realExceptionClassName, message);
     ServiceException se = new ServiceException(re);
 

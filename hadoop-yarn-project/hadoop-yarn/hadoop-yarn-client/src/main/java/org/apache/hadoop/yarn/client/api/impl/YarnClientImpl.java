@@ -108,6 +108,10 @@ import org.apache.hadoop.yarn.util.timeline.TimelineUtils;
 
 import com.google.common.annotations.VisibleForTesting;
 
+/**
+ * client与ResourceManager交互完成各种操作
+ * 该库对常用的函数进行封装，并提供重试容错
+ */
 @Private
 @Unstable
 public class YarnClientImpl extends YarnClient {
@@ -171,6 +175,7 @@ public class YarnClientImpl extends YarnClient {
   @Override
   protected void serviceStart() throws Exception {
     try {
+
       rmClient = ClientRMProxy.createRMProxy(getConfig(),
           ApplicationClientProtocol.class);
       if (historyServiceEnabled) {
@@ -226,6 +231,9 @@ public class YarnClientImpl extends YarnClient {
       throw new ApplicationIdNotProvidedException(
           "ApplicationId is not provided in ApplicationSubmissionContext");
     }
+    /**
+     * 把ApplicationMaster提交到ResourceManager
+     */
     SubmitApplicationRequest request =
         Records.newRecord(SubmitApplicationRequest.class);
     request.setApplicationSubmissionContext(appContext);
