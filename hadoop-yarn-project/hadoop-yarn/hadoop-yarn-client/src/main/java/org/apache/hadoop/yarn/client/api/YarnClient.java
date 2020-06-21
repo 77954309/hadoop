@@ -63,6 +63,9 @@ import org.apache.hadoop.yarn.exceptions.ApplicationNotFoundException;
 import org.apache.hadoop.yarn.exceptions.YarnException;
 import org.apache.hadoop.yarn.security.AMRMTokenIdentifier;
 
+/**
+ * 能与ResourceManager交互完成各种操作
+ */
 @InterfaceAudience.Public
 @InterfaceStability.Stable
 public abstract class YarnClient extends AbstractService {

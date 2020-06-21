@@ -97,6 +97,7 @@ extends AbstractService {
   private static final Log LOG = LogFactory.getLog(AMRMClientAsync.class);
   
   protected final AMRMClient<T> client;
+  //实现ApplicationMaster
   protected final CallbackHandler handler;
   protected final AtomicInteger heartbeatIntervalMs = new AtomicInteger();
 
@@ -139,6 +140,8 @@ extends AbstractService {
    * registration, starts the heartbeating thread.
    * @throws YarnException
    * @throws IOException
+   * ApplicationMaster向ResourceManager注册
+   *
    */
   public abstract RegisterApplicationMasterResponse registerApplicationMaster(
       String appHostName, int appHostPort, String appTrackingUrl)
@@ -151,6 +154,7 @@ extends AbstractService {
    * @param appTrackingUrl New URL to get master info
    * @throws YarnException
    * @throws IOException
+   * 通知ResourceManager注销ApplicationMaster
    */
   public abstract void unregisterApplicationMaster(
       FinalApplicationStatus appStatus, String appMessage, String appTrackingUrl) 
@@ -159,6 +163,7 @@ extends AbstractService {
   /**
    * Request containers for resources before calling <code>allocate</code>
    * @param req Resource request
+   * 添加Container请求
    */
   public abstract void addContainerRequest(T req);
 
@@ -259,6 +264,10 @@ extends AbstractService {
      * Called when the ResourceManager responds to a heartbeat with completed
      * containers. If the response contains both completed containers and
      * allocated containers, this will be called before containersAllocated.
+     * 被调用时机：ResourceManager为ApplicationMaster 返回的心跳应答中包含完成的
+     * Container信息。
+     * 注意：如果心跳应答中同时包含完成Container和新分配的container,则该回调函数将在containersAllocated 之前调用
+     *
      */
     public void onContainersCompleted(List<ContainerStatus> statuses);
     
@@ -266,6 +275,8 @@ extends AbstractService {
      * Called when the ResourceManager responds to a heartbeat with allocated
      * containers. If the response containers both completed containers and
      * allocated containers, this will be called after containersCompleted.
+     * ResourceManager为ApplicationMaster返回的心跳中包含新分配Container信息
+     * 注意：如果心跳应答中同时包含完成Container和新分配container,则该回调函数将在onContainersCompleted之后调用
      */
     public void onContainersAllocated(List<Container> containers);
     
@@ -273,12 +284,14 @@ extends AbstractService {
      * Called when the ResourceManager wants the ApplicationMaster to shutdown
      * for being out of sync etc. The ApplicationMaster should not unregister
      * with the RM unless the ApplicationMaster wants to be the last attempt.
+     * ResourceManager通知ApplicationMaster停止运行
      */
     public void onShutdownRequest();
     
     /**
      * Called when nodes tracked by the ResourceManager have changed in health,
      * availability etc.
+     * ResourcerManager管理节点发生变化（比如不健康节点。不可用节点）
      */
     public void onNodesUpdated(List<NodeReport> updatedNodes);
     
@@ -288,7 +301,7 @@ extends AbstractService {
      * Called when error comes from RM communications as well as from errors in
      * the callback itself from the app. Calling
      * stop() is the recommended action.
-     *
+     * 任何异常的时候
      * @param e
      */
     public void onError(Throwable e);

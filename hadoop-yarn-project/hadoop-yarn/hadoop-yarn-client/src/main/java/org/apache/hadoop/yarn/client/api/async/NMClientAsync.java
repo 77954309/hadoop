@@ -103,6 +103,8 @@ import com.google.common.annotations.VisibleForTesting;
  * asyncClient.stop();
  * }
  * </pre>
+ * ApplicationMaster与NodeManager交互部分的通用编程库
+ *
  */
 @Public
 @Stable
@@ -185,6 +187,8 @@ public abstract class NMClientAsync extends AbstractService {
      * @param containerId the Id of the container
      * @param allServiceResponse a Map between the auxiliary service names and
      *                           their outputs
+     *
+     * 当接收到启动Contailner请求时被调用
      */
     void onContainerStarted(ContainerId containerId,
         Map<String, ByteBuffer> allServiceResponse);
@@ -194,6 +198,8 @@ public abstract class NMClientAsync extends AbstractService {
      * of the container
      * @param containerId the Id of the container
      * @param containerStatus the status of the container
+     *
+     * 当NodeManager应答（对之前发送查询状态指令的应答）Container当前状态时被调用
      */
     void onContainerStatusReceived(ContainerId containerId,
         ContainerStatus containerStatus);
@@ -202,6 +208,7 @@ public abstract class NMClientAsync extends AbstractService {
      * The API is called when <code>NodeManager</code> responds to indicate the
      * container is stopped.
      * @param containerId the Id of the container
+     * 当NodeManager应答（对之前发送停止container指令的应答）Container已停止被调用
      */
     void onContainerStopped(ContainerId containerId);
 
@@ -211,6 +218,7 @@ public abstract class NMClientAsync extends AbstractService {
      *
      * @param containerId the Id of the container
      * @param t the raised exception
+     * 当NodeManager启动Container过程中抛出异常时调用
      */
     void onStartContainerError(ContainerId containerId, Throwable t);
 
@@ -220,6 +228,8 @@ public abstract class NMClientAsync extends AbstractService {
      *
      * @param containerId the Id of the container
      * @param t the raised exception
+     *
+     * 当查询Container运行状态时抛出异常时被调用
      */
     void onGetContainerStatusError(ContainerId containerId, Throwable t);
 
@@ -229,6 +239,7 @@ public abstract class NMClientAsync extends AbstractService {
      *
      * @param containerId the Id of the container
      * @param t the raised exception
+     *  当NodeManager停止container中抛出异常时调用
      */
     void onStopContainerError(ContainerId containerId, Throwable t);
 

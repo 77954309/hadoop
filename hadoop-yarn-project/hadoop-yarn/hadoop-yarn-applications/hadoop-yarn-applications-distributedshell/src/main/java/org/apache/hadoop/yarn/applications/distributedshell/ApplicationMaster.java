@@ -611,6 +611,7 @@ public class ApplicationMaster {
     // containers
     // Keep looping until all the containers are launched and shell script
     // executed on them ( regardless of success/failure).
+    //所有资源一次性发送给ResourceManager
     for (int i = 0; i < numTotalContainersToRequest; ++i) {
       ContainerRequest containerAsk = setupContainerAskForRM();
       amRMClient.addContainerRequest(containerAsk);

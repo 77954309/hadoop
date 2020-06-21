@@ -108,7 +108,7 @@ import org.apache.hadoop.yarn.util.timeline.TimelineUtils;
  * <code>ResourceManager</code> and then monitors the application by requesting the <code>ResourceManager</code> 
  * for an {@link ApplicationReport} at regular time intervals. In case of the application taking too long, the client 
  * kills the application by submitting a {@link KillApplicationRequest} to the <code>ResourceManager</code>. </p>
- *
+ * 可以分布式运行Shell命令的应用程序
  */
 @InterfaceAudience.Public
 @InterfaceStability.Unstable
@@ -580,8 +580,11 @@ public class Client {
     // put location of shell script into env
     // using the env info, the application master will create the correct local resource for the 
     // eventual containers that will be launched to execute the shell scripts
+    //SHell 脚本在Hdfs上的位置
     env.put(DSConstants.DISTRIBUTEDSHELLSCRIPTLOCATION, hdfsShellScriptLocation);
+    //Shell脚本最近修改的时间
     env.put(DSConstants.DISTRIBUTEDSHELLSCRIPTTIMESTAMP, Long.toString(hdfsShellScriptTimestamp));
+    //脚本长度
     env.put(DSConstants.DISTRIBUTEDSHELLSCRIPTLEN, Long.toString(hdfsShellScriptLen));
     if (domainId != null && domainId.length() > 0) {
       env.put(DSConstants.DISTRIBUTEDSHELLTIMELINEDOMAIN, domainId);
