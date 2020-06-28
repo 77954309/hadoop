@@ -422,6 +422,7 @@ public class RPC {
   /** Construct a client-side proxy object that implements the named protocol,
    * talking to a server at the named address.
    * 先从客户端开始
+   * 构造一个客户端代理对象（实现某个协议），用于向服务器发送RPC请求
    * @param <T>*/
   public static <T> T getProxy(Class<T> protocol,
                                 long clientVersion,
