@@ -29,7 +29,9 @@ import org.apache.hadoop.yarn.event.EventHandler;
 import org.apache.hadoop.yarn.server.resourcemanager.RMContext;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.RMAppAttempt;
 
-
+/**
+ * 与摸个NodeManager通信，要求它为某个应用程序启动ApplicationMaster
+ */
 public class ApplicationMasterLauncher extends AbstractService implements
     EventHandler<AMLauncherEvent> {
   private static final Log LOG = LogFactory.getLog(

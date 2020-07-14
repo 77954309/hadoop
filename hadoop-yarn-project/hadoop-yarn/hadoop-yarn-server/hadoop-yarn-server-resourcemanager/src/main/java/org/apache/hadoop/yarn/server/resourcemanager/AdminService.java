@@ -91,6 +91,10 @@ import org.apache.hadoop.yarn.server.resourcemanager.security.authorize.RMPolicy
 import com.google.common.annotations.VisibleForTesting;
 import com.google.protobuf.BlockingService;
 
+/**
+ * ResourceManager为管理员提供一套独立的服务接口。
+ * 管理集群，比如动态更新节点列表、更新ACL列表，更新队列信息。
+ */
 public class AdminService extends CompositeService implements
     HAServiceProtocol, ResourceManagerAdministrationProtocol {
 

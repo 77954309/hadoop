@@ -132,6 +132,7 @@ public class RPC {
   /**
    * Get all interfaces that the given protocol implements or extends
    * which are assignable from VersionedProtocol.
+   * 实现协议接口
    */
   static Class<?>[] getProtocolInterfaces(Class<?> protocol) {
     Class<?>[] interfaces  = protocol.getInterfaces();

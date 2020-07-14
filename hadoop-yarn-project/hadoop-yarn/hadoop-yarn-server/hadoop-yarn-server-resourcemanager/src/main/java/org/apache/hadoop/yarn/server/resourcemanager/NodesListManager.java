@@ -41,6 +41,10 @@ import org.apache.hadoop.yarn.server.resourcemanager.rmnode.RMNode;
 
 import com.google.common.annotations.VisibleForTesting;
 
+/**
+ * 维护正常节点和异常节点列表，管理exclude(类似黑名单)
+ * 和include(白名单)，这两个列表均是在配置文件中设置的。可以动态加载。
+ */
 @SuppressWarnings("unchecked")
 public class NodesListManager extends AbstractService implements
     EventHandler<NodesListManagerEvent> {

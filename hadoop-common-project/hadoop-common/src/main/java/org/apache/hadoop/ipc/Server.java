@@ -823,7 +823,7 @@ public abstract class Server {
 
   /**
    * 函数调用返回结果过大或者网络异常情况（网络过慢），
-   * 仅存一个selector对象，用于监听SelectionKey。OP_WRITE
+   * 仅存一个selector对象，用于监听SelectionKey.OP_WRITE
    *
    */
   private class Responder extends Thread {

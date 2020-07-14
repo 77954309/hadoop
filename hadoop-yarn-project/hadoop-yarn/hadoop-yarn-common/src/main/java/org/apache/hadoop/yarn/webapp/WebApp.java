@@ -46,6 +46,8 @@ import com.sun.jersey.spi.container.servlet.ServletContainer;
 
 /**
  * @see WebApps for a usage example
+ * 为了更加友好展示集群资源使用情况和应用程序运行状态等信息，
+ * Yarn对外提供了一个web
  */
 @InterfaceAudience.LimitedPrivate({"YARN", "MapReduce"})
 public abstract class WebApp extends ServletModule {

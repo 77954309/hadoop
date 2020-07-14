@@ -98,6 +98,9 @@ import org.apache.hadoop.yarn.server.utils.BuilderUtils;
 
 import com.google.common.annotations.VisibleForTesting;
 
+/**
+ * 处理来自ApplicationMaster请求。主要
+ */
 @SuppressWarnings("unchecked")
 @Private
 public class ApplicationMasterService extends AbstractService implements

@@ -26,6 +26,11 @@ import org.apache.hadoop.yarn.event.EventHandler;
 import org.apache.hadoop.yarn.util.AbstractLivelinessMonitor;
 import org.apache.hadoop.yarn.util.SystemClock;
 
+/**
+ * 监控AM是否活着，如果一个ApplicatonMaster在一定时间（10min）内未汇报心跳，认为死掉，
+ * 它上面所有正在运行的Container将被置为失败状态，而AM本身会被重新分配到另外一个节点
+ * （用户可指定每个ApplicationMaster的尝试次数，默认2）执行。
+ */
 public class AMLivelinessMonitor extends AbstractLivelinessMonitor<ApplicationAttemptId> {
 
   private EventHandler dispatcher;

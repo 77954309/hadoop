@@ -152,6 +152,7 @@ import com.google.common.util.concurrent.SettableFuture;
 /**
  * The client interface to the Resource Manager. This module handles all the rpc
  * interfaces to the resource manager from the client.
+ * 为普通用户提供的服务，它处理来自客户端各种RPC请求，比如提交应用程序、终止应用程序、获取应用程序运行状态等。
  */
 public class ClientRMService extends AbstractService implements
     ApplicationClientProtocol {

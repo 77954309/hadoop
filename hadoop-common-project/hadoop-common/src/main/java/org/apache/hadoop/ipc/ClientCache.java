@@ -53,6 +53,7 @@ public class ClientCache {
     // configurations.  Since the IPC is usually intended globally, not
     // per-job, we choose (a).
     Client client = clients.get(factory);
+    client.call()
     if (client == null) {
       client = new Client(valueClass, conf, factory);
       clients.put(factory, client);

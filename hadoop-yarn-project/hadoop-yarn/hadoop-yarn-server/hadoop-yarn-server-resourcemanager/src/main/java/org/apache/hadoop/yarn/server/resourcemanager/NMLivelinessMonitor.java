@@ -28,6 +28,9 @@ import org.apache.hadoop.yarn.server.resourcemanager.rmnode.RMNodeEventType;
 import org.apache.hadoop.yarn.util.AbstractLivelinessMonitor;
 import org.apache.hadoop.yarn.util.SystemClock;
 
+/**
+ * 监控NM是否活着，如果一个NodeManager在一定（10min）内汇报心跳信息，否则认为死掉了，需要将从集群移除
+ */
 public class NMLivelinessMonitor extends AbstractLivelinessMonitor<NodeId> {
 
   private EventHandler dispatcher;
