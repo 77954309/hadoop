@@ -16,9 +16,8 @@ public class TestSimpleMRAppMaster2 {
         YarnConfiguration conf = new YarnConfiguration(new Configuration());
 
         appMaster.serviceInit(conf);
-//        appMaster.serviceStart();
-//        appMaster.getDispatcher().getEventHandler().handle(new TestJobEvent(jobID, TestJobEventType.JOB_KILL));
-//        appMaster.getDispatcher().getEventHandler().handle(new TestJobEvent(jobID, TestJobEventType.JOB_INIT));
-
+        appMaster.getDispatcher().getEventHandler().handle(new TestJobEvent(jobID, TestJobEventType.JOB_KILL));
+        appMaster.getDispatcher().getEventHandler().handle(new TestJobEvent(jobID, TestJobEventType.JOB_INIT));
+        appMaster.serviceStart();
     }
 }

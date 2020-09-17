@@ -134,6 +134,10 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.LoadingCache;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
+/**
+ * 对public 资源，由公共服务ResourceLocalizationService
+ * 下载，内部维护一个线程池并行下载资源
+ */
 public class ResourceLocalizationService extends CompositeService
     implements EventHandler<LocalizationEvent>, LocalizationProtocol {
 

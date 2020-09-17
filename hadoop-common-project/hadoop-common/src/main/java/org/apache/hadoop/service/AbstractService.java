@@ -67,6 +67,7 @@ public abstract class AbstractService implements Service {
    */
   private final ServiceOperations.ServiceListeners listeners
     = new ServiceOperations.ServiceListeners();
+
   /**
    * Static listeners to all events across all services
    */

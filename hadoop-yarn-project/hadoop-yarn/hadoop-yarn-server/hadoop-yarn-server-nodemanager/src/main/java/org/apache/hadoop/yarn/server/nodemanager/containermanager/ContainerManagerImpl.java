@@ -161,6 +161,7 @@ public class ContainerManagerImpl extends CompositeService implements
   private final NodeStatusUpdater nodeStatusUpdater;
 
   protected LocalDirsHandlerService dirsHandler;
+  //中央处理器
   protected final AsyncDispatcher dispatcher;
   private final ApplicationACLsManager aclsManager;
 

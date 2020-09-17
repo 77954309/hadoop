@@ -80,7 +80,9 @@ public class NodeManager extends CompositeService
   private NodeHealthCheckerService nodeHealthChecker;
   private LocalDirsHandlerService dirsHandler;
   private Context context;
+  //中央处理器
   private AsyncDispatcher dispatcher;
+  //
   private ContainerManagerImpl containerManager;
   private NodeStatusUpdater nodeStatusUpdater;
   private static CompositeServiceShutdownHook nodeManagerShutdownHook; 
@@ -239,8 +241,9 @@ public class NodeManager extends CompositeService
         .getContainersMonitor(), this.aclsManager, dirsHandler);
     addService(webServer);
     ((NMContext) context).setWebServer(webServer);
-
+    //CotainerManager
     dispatcher.register(ContainerManagerEventType.class, containerManager);
+    //NodeManager
     dispatcher.register(NodeManagerEventType.class, this);
     addService(dispatcher);
     

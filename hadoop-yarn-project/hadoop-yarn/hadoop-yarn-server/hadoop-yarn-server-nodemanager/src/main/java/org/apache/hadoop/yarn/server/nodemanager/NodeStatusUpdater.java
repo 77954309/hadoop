@@ -21,6 +21,9 @@ package org.apache.hadoop.yarn.server.nodemanager;
 import org.apache.hadoop.service.Service;
 import org.apache.hadoop.yarn.api.records.ContainerId;
 
+/**
+ * NodeStatusUpdater是NodeManager与ResourceManager通信的唯一的通道
+ */
 public interface NodeStatusUpdater extends Service {
 
   /**
