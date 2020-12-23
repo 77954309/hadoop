@@ -402,6 +402,10 @@ implements ByteBufferReadable, CanSetDropBehind, CanSetReadahead,
    * @param updatePosition whether to update current position
    * @return located block
    * @throws IOException
+   *
+   * getBlockAt根据offset得到具体的LocatedBlock。
+   * locatedBlocks 去拿我们需要block,locatedBlocks是通过DFSClient里拿到一些块，它们是cache的，如果没有找我们的块
+   * 我们DFSClinet去拿新的一批块
    */
   private synchronized LocatedBlock getBlockAt(long offset,
       boolean updatePosition) throws IOException {
@@ -416,6 +420,7 @@ implements ByteBufferReadable, CanSetDropBehind, CanSetReadahead,
           + ", updatePosition=" + updatePosition
           + ", locatedBlocks=" + locatedBlocks);
     }
+    //大于了要读取文件的长度，默认定位到最后一个block
     else if (offset >= locatedBlocks.getFileLength()) {
       // offset to the portion of the last block,
       // which is not known to the name-node yet;
@@ -424,10 +429,12 @@ implements ByteBufferReadable, CanSetDropBehind, CanSetReadahead,
     }
     else {
       // search cached blocks first
+      // 内部查找通过二分查找实现
       int targetBlockIdx = locatedBlocks.findBlock(offset);
       if (targetBlockIdx < 0) { // block is not cached
         targetBlockIdx = LocatedBlocks.getInsertIndex(targetBlockIdx);
         // fetch more blocks
+        // 通过DFSClient获得更多的块
         final LocatedBlocks newBlocks = dfsClient.getLocatedBlocks(src, offset);
         assert (newBlocks != null) : "Could not find target position " + offset;
         locatedBlocks.insertRange(targetBlockIdx, newBlocks.getLocatedBlocks());
@@ -536,6 +543,7 @@ implements ByteBufferReadable, CanSetDropBehind, CanSetReadahead,
   /**
    * Open a DataInputStream to a DataNode so that it can be read from.
    * We get block ID and the IDs of the destinations at startup, from the namenode.
+   * 根据pos来拿到需要读取的datanode来更新currentNode
    */
   private synchronized DatanodeInfo blockSeekTo(long target) throws IOException {
     if (target >= getFileLength()) {
@@ -560,11 +568,11 @@ implements ByteBufferReadable, CanSetDropBehind, CanSetReadahead,
     while (true) {
       //
       // Compute desired block
-      //
+      // 根据offset获得cache的block，会更新pos
       LocatedBlock targetBlock = getBlockAt(target, true);
       assert (target==pos) : "Wrong postion " + pos + " expect " + target;
       long offsetIntoBlock = target - targetBlock.getStartOffset();
-
+      //得到具体的datanode信息
       DNAddrPair retval = chooseDataNode(targetBlock, null);
       chosenNode = retval.info;
       InetSocketAddress targetAddr = retval.addr;
@@ -698,6 +706,8 @@ implements ByteBufferReadable, CanSetDropBehind, CanSetReadahead,
 
   /**
    * Used to read bytes into a user-supplied ByteBuffer
+   * buf封装到ByteArrayStrategy里，ByteArrayStrategy的结构比较简单，主要封装buf,
+   *
    */
   private static class ByteBufferStrategy implements ReaderStrategy {
     final ByteBuffer buf;
@@ -729,6 +739,9 @@ implements ByteBufferReadable, CanSetDropBehind, CanSetReadahead,
   /* This is a used by regular read() and handles ChecksumExceptions.
    * name readBuffer() is chosen to imply similarity to readBuffer() in
    * ChecksumFileSystem
+   * 如果在读的过程中抛异常，对于第一个副本它会重试一次相同的副本，如果还是出错，会将当前datanode加入dead node
+   * 并且采用新的databode上的副本，直到成功读取或者所有副本都出错抛异常跳出循环。
+   *
    */ 
   private synchronized int readBuffer(ReaderStrategy reader, int off, int len,
       Map<ExtendedBlock, Set<DatanodeInfo>> corruptedBlockMap)
@@ -754,6 +767,7 @@ implements ByteBufferReadable, CanSetDropBehind, CanSetReadahead,
         ioe = ce;
         retryCurrentNode = false;
         // we want to remember which block replicas we have tried
+        // 将读取失败的副本加入corrupted map
         addIntoCorruptedBlockMap(getCurrentBlock(), currentNode,
             corruptedBlockMap);
       } catch ( IOException e ) {
@@ -769,9 +783,11 @@ implements ByteBufferReadable, CanSetDropBehind, CanSetReadahead,
         /* possibly retry the same node so that transient errors don't
          * result in application level failures (e.g. Datanode could have
          * closed the connection because the client is idle for too long).
+         * 重试同一个副本
          */ 
         sourceFound = seekToBlockSource(pos);
       } else {
+        // 将当前datanode加入dead node，内部调用了blockSeekTo得到新的datanode上的副本
         addToDeadNodes(currentNode);
         sourceFound = seekToNewSource(pos);
       }
@@ -782,6 +798,14 @@ implements ByteBufferReadable, CanSetDropBehind, CanSetReadahead,
     }
   }
 
+  /**
+   * 具体读的逻辑
+   * @param strategy
+   * @param off
+   * @param len
+   * @return
+   * @throws IOException
+   */
   private int readWithStrategy(ReaderStrategy strategy, int off, int len) throws IOException {
     dfsClient.checkOpen();
     if (closed) {
@@ -792,17 +816,22 @@ implements ByteBufferReadable, CanSetDropBehind, CanSetReadahead,
     failures = 0;
     if (pos < getFileLength()) {
       int retries = 2;
+      //重试两次
       while (retries > 0) {
         try {
           // currentNode can be left as null if previous read had a checksum
           // error on the same block. See HDFS-3067
+          //pos位置大于了当前block结束的位置
           if (pos > blockEnd || currentNode == null) {
+            // 得到我们需要读取的datanode
             currentNode = blockSeekTo(pos);
           }
           int realLen = (int) Math.min(len, (blockEnd - pos + 1L));
+          //
           if (locatedBlocks.isLastBlockComplete()) {
             realLen = (int) Math.min(realLen, locatedBlocks.getFileLength());
           }
+          //具体执行读操作，主要利用blockReader来读，返回读取的字节数
           int result = readBuffer(strategy, off, realLen, corruptedBlockMap);
           
           if (result >= 0) {
@@ -822,6 +851,7 @@ implements ByteBufferReadable, CanSetDropBehind, CanSetReadahead,
             DFSClient.LOG.warn("DFS Read", e);
           }
           blockEnd = -1;
+          //
           if (currentNode != null) { addToDeadNodes(currentNode); }
           if (--retries == 0) {
             throw e;
@@ -829,11 +859,14 @@ implements ByteBufferReadable, CanSetDropBehind, CanSetReadahead,
         } finally {
           // Check if need to report block replicas corruption either read
           // was successful or ChecksumException occured.
+          //主要进行文件校验的工作，Hadoop为了保证数据的一致性，会对文件生成相应的校验文件，并在读写时候进行校验，确保数据准确性
+          //如果出现了错误，一些情况下需要汇报给namenode。
           reportCheckSumFailure(corruptedBlockMap, 
               currentLocatedBlock.getLocations().length);
         }
       }
     }
+    // 没读到字节，标记读入流结束
     return -1;
   }
 
@@ -842,6 +875,7 @@ implements ByteBufferReadable, CanSetDropBehind, CanSetReadahead,
    */
   @Override
   public synchronized int read(final byte buf[], int off, int len) throws IOException {
+    // 封装buf
     ReaderStrategy byteArrayReader = new ByteArrayStrategy(buf);
 
     return readWithStrategy(byteArrayReader, off, len);
@@ -871,7 +905,8 @@ implements ByteBufferReadable, CanSetDropBehind, CanSetReadahead,
       corruptedBlockMap.put(blk, dnSet);
     }
   }
-
+  //一个block会有多个副本，它们存在不同的datanode上，
+  // chooseDataNode会根据block拿到具体的最合适的datanode。
   private DNAddrPair chooseDataNode(LocatedBlock block,
       Collection<DatanodeInfo> ignoredNodes) throws IOException {
     while (true) {
@@ -910,9 +945,11 @@ implements ByteBufferReadable, CanSetDropBehind, CanSetReadahead,
           double waitTime = timeWindow * failures +       // grace period for the last round of attempt
             timeWindow * (failures + 1) * DFSUtil.getRandom().nextDouble(); // expanding time window for each failure
           DFSClient.LOG.warn("DFS chooseDataNode: got # " + (failures + 1) + " IOException, will wait for " + waitTime + " msec.");
+          // 休眠一个随机时间
           Thread.sleep((long)waitTime);
         } catch (InterruptedException iex) {
         }
+        // 清空deadNodes
         deadNodes.clear(); //2nd option is to remove only nodes[blockId]
         openInfo();
         block = getBlockAt(block.getStartOffset(), false);
@@ -928,6 +965,12 @@ implements ByteBufferReadable, CanSetDropBehind, CanSetReadahead,
    * @param ignoredNodes Do not choose nodes in this array (may be null)
    * @return The DNAddrPair of the best node.
    * @throws IOException
+   * 遍历block的所有副本，它们存在不同datanode上，这里best是指之前namenode返回给我们blocks的时候，
+   * 已经根据一些条件对所有副本进行了排序，我们根据排序优先级选择第一个还没有试过的副本，之前用过但出问题，
+   * 之前用过但出问题datanode会加到ignored nodes
+   *
+   * speculative task （推测执行），依然会出现慢节点的问题，因为它们读的同一个副本，因为很可能namenode提供的副本排序
+   * 并没有变，它们读的依然第一个不是坏节点，只不过它是慢节点
    */
   private DNAddrPair getBestNodeDNAddrPair(LocatedBlock block,
       Collection<DatanodeInfo> ignoredNodes) throws IOException {
@@ -936,6 +979,7 @@ implements ByteBufferReadable, CanSetDropBehind, CanSetReadahead,
     DatanodeInfo chosenNode = null;
     StorageType storageType = null;
     if (nodes != null) {
+      //遍历所有副本，选择第一个还没有被用过的副本
       for (int i = 0; i < nodes.length; i++) {
         if (!deadNodes.containsKey(nodes[i])
             && (ignoredNodes == null || !ignoredNodes.contains(nodes[i]))) {
@@ -1361,6 +1405,22 @@ implements ByteBufferReadable, CanSetDropBehind, CanSetReadahead,
    * (who can not read).
    * @param corruptedBlockMap map of corrupted blocks
    * @param dataNodeCount number of data nodes who contains the block replicas
+   */
+  //主要进行文件校验的工作，Hadoop为了保证数据的一致性，会对文件生成相应的校验文件，并在读写时候进行校验，确保数据准确性
+  //如果出现了错误，一些情况下需要汇报给namenode。
+
+  /**
+   * 尝试了多个副本，其中至少一个成功了，其他失败的副本会被会被汇报给namenode
+   * 如果所有副本都失败了，只有当副本数1时才会被汇报给namenode，否则不汇报
+   * @param corruptedBlockMap
+   * @param dataNodeCount
+   *
+   * 　　Datanode在把数据实际存储之前会验证数据的校验和。client通过pipeline把数据写入datanode，
+   *   最后一个datanode会负责检查校验和。当client从datanode读取数据时，也会检查校验和。把真实数据的校和合同datanode上的校验和进行比较。
+   *   每个datanode都保存有一个checksum验证的持久化日志，日志中有当前datanode每个block最后的更新时间。当client成功验证了一个block，它会告诉datanode，之后datanode会更新它的日志。保存这些信息有助于检测坏磁盘。
+   * 　除了会在client读取数据时验证block，每个datanode还会在后台运行一个DataBlockScanner线程来周期性验证所有存储在datanode上的block. 这用来防止物理存储媒介上出现"位衰减"。
+   * 　因为HDFS保存有同一个block的多个备份,所以它可以用好的副本来替换损坏的数据副本。如果某个client在读取数据时检测到数据错误，在抛出ChecksumException后，它会向namenode上报信息告知具体的bad block还有datanode。namenode会把指定的block标记为"corrupt"，之后的client就不会再被定位到此block，此block也不会再被复制到其它datanode。之后namenode会调度一个此block的正常副本，以保证负载平衡。这之后，损坏的block副本会被删除。
+   * 　可以在对FileSystem调用open()之前调用setVerifyChecksum()来禁止校验和检测，也可以通过在shell中执行-get,-copyToLocal命令时指定-ignoreCrc选项做到。
    */
   private void reportCheckSumFailure(
       Map<ExtendedBlock, Set<DatanodeInfo>> corruptedBlockMap, 
