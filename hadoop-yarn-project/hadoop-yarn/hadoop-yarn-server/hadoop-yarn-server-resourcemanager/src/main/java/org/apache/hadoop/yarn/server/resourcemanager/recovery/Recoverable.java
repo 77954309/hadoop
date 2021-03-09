@@ -19,6 +19,9 @@ package org.apache.hadoop.yarn.server.resourcemanager.recovery;
 
 import org.apache.hadoop.yarn.server.resourcemanager.recovery.RMStateStore.RMState;
 
+/**
+ * ResourceManager重启后将调度该函数恢复调度器内部的信息
+ */
 public interface Recoverable {
   public void recover(RMState state) throws Exception;
 }

@@ -224,7 +224,8 @@ public class NodeManager extends CompositeService
 
     this.context = createNMContext(containerTokenSecretManager,
         nmTokenSecretManager, nmStore);
-    
+
+    // NODE_UPDATE 事件类型
     nodeStatusUpdater =
         createNodeStatusUpdater(context, dispatcher, nodeHealthChecker);
 

@@ -60,6 +60,8 @@ public interface YarnScheduler extends EventHandler<SchedulerEvent> {
    * @param recursive get children queues?
    * @return queue information
    * @throws IOException
+   * 获取一个队列基本信息，queueName为队列名称，includeChildQueues 表示是否包含子队列
+   * recursive表示是否递归返回其子队列信息
    */
   @Public
   @Stable
@@ -69,6 +71,7 @@ public interface YarnScheduler extends EventHandler<SchedulerEvent> {
   /**
    * Get acls for queues for current user.
    * @return acls for queues for current user
+   * 返回当前用户的队列ACL权限
    */
   @Public
   @Stable
@@ -77,6 +80,7 @@ public interface YarnScheduler extends EventHandler<SchedulerEvent> {
   /**
    * Get the whole resource capacity of the cluster.
    * @return the whole resource capacity of the cluster.
+   *
    */
   @LimitedPrivate("yarn")
   @Unstable
@@ -85,6 +89,7 @@ public interface YarnScheduler extends EventHandler<SchedulerEvent> {
   /**
    * Get minimum allocatable {@link Resource}.
    * @return minimum allocatable resource
+   * 返回调度器最少可分配的资源
    */
   @Public
   @Stable
@@ -93,6 +98,7 @@ public interface YarnScheduler extends EventHandler<SchedulerEvent> {
   /**
    * Get maximum allocatable {@link Resource}.
    * @return maximum allocatable resource
+   * 返回调度器最多可分配的资源
    */
   @Public
   @Stable
@@ -101,6 +107,7 @@ public interface YarnScheduler extends EventHandler<SchedulerEvent> {
   /**
    * Get the number of nodes available in the cluster.
    * @return the number of available nodes.
+   *  返回当前集群中可用节点的总数
    */
   @Public
   @Stable
@@ -117,6 +124,12 @@ public interface YarnScheduler extends EventHandler<SchedulerEvent> {
    * @param blacklistAdditions 
    * @param blacklistRemovals 
    * @return the {@link Allocation} for the application
+   * ApplicationMaster和资源调度器之间最主要的API,ApplicationMaster通过该API更新，
+   * 资源需求和待释放的Container列表，其中appAttemptId为应用程序实例ID,
+   * ask 新请求资源的描述，
+   * release 为待释放Container列表，
+   * blacklistAdditions 待加入黑名单
+   * blacklistRemovals 为待移除黑名单列表
    */
   @Public
   @Stable
@@ -132,6 +145,7 @@ public interface YarnScheduler extends EventHandler<SchedulerEvent> {
    * @param nodeId
    * @return the {@link SchedulerNodeReport} for the node or null
    * if nodeId does not point to a defined node.
+   * 获取节点资源使用情况报告
    */
   @LimitedPrivate("yarn")
   @Stable
@@ -141,6 +155,7 @@ public interface YarnScheduler extends EventHandler<SchedulerEvent> {
    * Get the Scheduler app for a given app attempt Id.
    * @param appAttemptId the id of the application attempt
    * @return SchedulerApp for this given attempt.
+   * 获取运行实例ApplicationAttemptId的SchedulerAppReport 对象
    */
   @LimitedPrivate("yarn")
   @Stable
@@ -159,6 +174,7 @@ public interface YarnScheduler extends EventHandler<SchedulerEvent> {
   /**
    * Get the root queue for the scheduler.
    * @return the root queue for the scheduler.
+   * 获取root队列
    */
   @LimitedPrivate("yarn")
   @Evolving
